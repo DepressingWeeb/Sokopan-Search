@@ -21,7 +21,7 @@ class Visualizer:
     def __init__(self, board):
         self.board_begin = board
         self.board = board
-        self.block_size = 96 #constant
+        self.block_size = 64 #constant
         self.n_rows = len(board)
         self.n_cols = len(board[0])
         self.window_width = self.block_size * self.n_cols
@@ -76,6 +76,7 @@ class Visualizer:
                     img_rect_2.center = center
                     self.SCREEN.blit(self.switch_unactivated, img_rect_1)
                     self.SCREEN.blit(self.stone, img_rect_2)
+
     def render_stone(self):
         for i in range(self.n_rows):
             for j in range(self.n_cols):
@@ -92,6 +93,14 @@ class Visualizer:
                     img_rect = self.character[char_direction].get_rect()
                     img_rect.center = center
                     self.SCREEN.blit(self.character[char_direction], img_rect)
+                elif board[i][j] == '.@':
+                    center = self.rect_coord[i][j].center
+                    img_rect_1 = self.switch_unactivated.get_rect()
+                    img_rect_1.center = center
+                    img_rect_2 = self.character[char_direction].get_rect()
+                    img_rect_2.center = center
+                    self.SCREEN.blit(self.switch_unactivated, img_rect_1)
+                    self.SCREEN.blit(self.character[char_direction], img_rect_2)
 
     def process_command(self,command : str):
         map_dir = {
@@ -103,8 +112,8 @@ class Visualizer:
         if command.islower():
             char_x,char_y = self.char_coord
             change_x,change_y,char_direction = map_dir[command]
-            board[char_x][char_y]=' '
-            board[char_x + change_x][char_y + change_y] = '@'
+            board[char_x][char_y]=board[char_x][char_y].replace('@','')
+            board[char_x + change_x][char_y + change_y] = (board[char_x + change_x][char_y + change_y]+'@').strip()
             self.char_coord = (char_x+change_x,char_y+change_y)
             self.char_direction = char_direction
         else:
@@ -116,14 +125,17 @@ class Visualizer:
                 board[stone_x_after_push][stone_y_after_push] = '.$'
             else:
                 board[stone_x_after_push][stone_y_after_push] = '$'
-            board[stone_x][stone_y] = '@'
-            board[char_x][char_y]= ' '
+            board[stone_x][stone_y] = board[stone_x][stone_y].replace('$','')
+            board[stone_x][stone_y] = (board[stone_x][stone_y]+'@').strip()
+            board[char_x][char_y]=board[char_x][char_y].replace('@','')
+            if board[char_x][char_y]=='':
+                board[char_x][char_y] = ' '
             self.char_coord = (char_x + change_x, char_y + change_y)
             self.char_direction = char_direction
 
     def main_loop(self):
         run = True
-        command_str = 'uLulDrrRRRRurD'
+        command_str = 'uLulDrrRRRRurDrdLLL'
         command_lst = [char for char in command_str]
         command_queue = deque(command_lst)
         self.SCREEN.fill(GREEN)
@@ -137,6 +149,7 @@ class Visualizer:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
+            #only render step once per second
             if len(command_queue)>0 and self.current_frame % self.frame_rate == 0:
                 command = command_queue.popleft()
                 self.process_command(command)

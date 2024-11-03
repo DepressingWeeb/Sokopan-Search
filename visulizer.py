@@ -1,6 +1,9 @@
 import pygame
 from collections import deque
 from timeit import default_timer as timer
+
+from A_star import AStar
+from UCS import UCS
 from bfs import BFS
 from globals import *
 class Visualizer:
@@ -122,10 +125,14 @@ class Visualizer:
     def main_loop(self):
         run = True
         bfs = BFS(self.board)
+        A_star = AStar(self.board,[1,1,1,1])
+        ucs = UCS(self.board,[0,0,0,0])
         start_time = timer()
-        command_str = bfs.BFS()
+        command_str,node_count = A_star.A_star()
+        #command_str, node_count = '',0
         end_time = timer()
         actual_time = end_time-start_time
+        print(node_count,actual_time)
         command_lst = [char for char in command_str]
         command_queue = deque(command_lst)
         self.SCREEN.fill(GREEN)
@@ -133,7 +140,6 @@ class Visualizer:
         self.render_stone()
         self.render_character(self.char_direction)
         pygame.display.update()
-        CLOCK.tick(1)
         while (run):
             self.current_frame+=1
             for event in pygame.event.get():

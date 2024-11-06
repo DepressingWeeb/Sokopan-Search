@@ -8,6 +8,7 @@ from copy import  deepcopy
 from A_star import AStar
 from UCS import UCS
 from bfs import BFS
+from dfs import DFS
 from globals import *
 class Visualizer:
     def __init__(self, board):
@@ -29,7 +30,7 @@ class Visualizer:
                                                (self.block_size,self.block_size))
         self.stone = pygame.transform.scale(pygame.image.load(r'resources/stone/tile002.png').convert_alpha(),
                                                (self.block_size-25,self.block_size-25))
-        self.switch_unactivated = pygame.transform.scale(pygame.image.load(r'resources/switch/tile002.png').convert_alpha(),
+        self.switch_unactivated = pygame.transform.scale(pygame.image.load(r'resources/switch/tile005.png').convert_alpha(),
                                                (self.block_size-10,self.block_size-10))
         self.tree = pygame.transform.scale(pygame.image.load(r'resources/tree/tile005.png').convert_alpha(),
                                                ((self.block_size-15),self.block_size-15))

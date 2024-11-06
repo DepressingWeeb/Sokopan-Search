@@ -163,21 +163,5 @@ class Visualizer:
             pygame.display.update()
             CLOCK.tick(self.frame_rate)
             self.current_frame += 1
-    def main_loop(self):
-
-        A_star = AStar(self.board,[1,1,1,1,1,1])
-        ucs = UCS(self.board,[0,0,0,0])
-        with multiprocessing.Manager() as manager:
-            shared_dict = manager.dict(node_count=0,path= '')
-            bfs = BFS(self.board)
-            # Create processes
-            bfs_process = multiprocessing.Process(target=bfs.BFS,args=(shared_dict,))
-            visualizer_process = multiprocessing.Process(target=self.visualize,args=(shared_dict,))
-            bfs_process.start()
-            visualizer_process.start()
-
-            # Wait for both processes to complete
-            bfs_process.join()
-            visualizer_process.join()
 #bfs = BFS(self.board)
 #print(bfs.BFS())

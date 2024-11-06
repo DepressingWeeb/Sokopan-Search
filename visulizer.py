@@ -1,3 +1,5 @@
+import multiprocessing
+
 import pygame
 from collections import deque
 from timeit import default_timer as timer
@@ -22,7 +24,6 @@ class Visualizer:
             for y in range(0, self.window_height, self.block_size):
                 rect = pygame.Rect(x, y, self.block_size, self.block_size)
                 self.rect_coord[y // self.block_size][x // self.block_size] = rect
-
         #UI specific
         self.map_tile = pygame.transform.scale(pygame.image.load(r'resources/map/tile001.png').convert_alpha(),
                                                (self.block_size,self.block_size))
@@ -121,47 +122,62 @@ class Visualizer:
             new_char_coord = (char_x + change_x, char_y + change_y)
             new_char_direction = char_direction
             return (new_board, new_char_coord, new_char_direction)
-
-
-    def main_loop(self):
-        run = True
-        bfs = BFS(self.board)
-        A_star = AStar(self.board,[1,1,1,1,1,1])
-        ucs = UCS(self.board,[0,0,0,0])
-        start_time = timer()
-        command_str,node_count = A_star.A_star()
-        #command_str, node_count = '',0
-        end_time = timer()
-        actual_time = end_time-start_time
-        print(node_count,actual_time)
-
+    def process_path_returned(self,path):
         board_states = []
         current_board = deepcopy(self.board)
         current_char_coord = self.char_coord
         current_char_dir = self.char_direction
-        board_states.append((current_board,self.char_coord,self.char_direction))
-        for ch in command_str:
+        board_states.append((current_board, self.char_coord, self.char_direction))
+        for ch in path:
             new_board,new_char_coord,new_char_dir = self.process_command(ch,current_char_coord,current_board)
             board_states.append((new_board,new_char_coord,new_char_dir))
             current_board = new_board
             current_char_coord = new_char_coord
             current_char_dir = new_char_dir
-
-        self.SCREEN.fill(GREEN)
-        current_state_index = 0
+        return board_states
+    def visualize(self,node_count_shared,path_shared):
+        current_state_index = -1
+        board_states = []
+        run = True
         while (run):
+            print(node_count_shared.value)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
             #only render step once per second
-            if current_state_index<len(board_states) and self.current_frame % self.frame_rate == 0:
-                current_board,current_char_coord,current_char_dir = board_states[current_state_index]
+            if path_shared.value == b"":
                 self.SCREEN.fill(GREEN)
-                self.render_map(current_board,current_char_dir)
-                current_state_index+=1
+                self.render_map(self.board, 0)
+            else:
+                print("OK")
+                #TODO: handle No Sol found case
+                if current_state_index == -1:
+                    path_returned = path_shared.value.decode()
+                    board_states = self.process_path_returned(path_returned)
+                    current_state_index = 0
+                if current_state_index<len(board_states) and self.current_frame % self.frame_rate == 0:
+                    current_board,current_char_coord,current_char_dir = board_states[current_state_index]
+                    self.SCREEN.fill(GREEN)
+                    self.render_map(current_board,current_char_dir)
+                    current_state_index+=1
             pygame.display.update()
             CLOCK.tick(self.frame_rate)
             self.current_frame += 1
+    def main_loop(self):
 
+        A_star = AStar(self.board,[1,1,1,1,1,1])
+        ucs = UCS(self.board,[0,0,0,0])
+        with multiprocessing.Manager() as manager:
+            shared_dict = manager.dict(node_count=0,path= '')
+            bfs = BFS(self.board)
+            # Create processes
+            bfs_process = multiprocessing.Process(target=bfs.BFS,args=(shared_dict,))
+            visualizer_process = multiprocessing.Process(target=self.visualize,args=(shared_dict,))
+            bfs_process.start()
+            visualizer_process.start()
+
+            # Wait for both processes to complete
+            bfs_process.join()
+            visualizer_process.join()
 #bfs = BFS(self.board)
 #print(bfs.BFS())

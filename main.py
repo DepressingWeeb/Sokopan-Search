@@ -1,3 +1,6 @@
+import ctypes
+import multiprocessing
+import threading
 import time
 
 import pygame
@@ -42,8 +45,19 @@ if __name__ == "__main__":
         ['#', '.', ' ', '@', ' ', ' ', ' ', ' ', '.', ' ', '#'],
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
     ]
-    visualizer = Visualizer(board=grid_2d)
-    visualizer.main_loop()
+    node_count = multiprocessing.Value('i', 0)
+    path_shared = multiprocessing.Array(ctypes.c_char,1000)
+
+    bfs_instance = BFS(grid_2d)
+    a_star_instance = AStar(grid_2d,[1,1,1,1,1,1])
+    visualizer_instance = Visualizer(grid_2d)
+
+    a_star_process = multiprocessing.Process(target=a_star_instance.A_star, args=(node_count, path_shared))
+    #visualizer_thread = threading.Thread(target=visualizer_instance.visualize, args=(node_count, path_shared))
+
+    a_star_process.start()
+    visualizer_instance.visualize(node_count,path_shared)
+    a_star_process.join()
     #start = time.time()
     #res = AStar(grid_2d,[1,1,1,1,1,1]).A_star()
     #end = time.time()

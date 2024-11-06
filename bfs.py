@@ -50,7 +50,7 @@ class BFS:
         next_x, next_y = char_x + direction[0], char_y + direction[1]
 
         return (next_x, next_y) not in stones_coord
-    def BFS(self):
+    def BFS(self,node_count_shared,path_shared):
         q = deque()
         visited = set()
         char_coord = (0, 0)
@@ -71,10 +71,14 @@ class BFS:
             curr_char_coord, curr_stones_coord, path = q.popleft()
             # Check if all stones are on the switches
             if sorted(curr_stones_coord) == self.target:
+                node_count_shared.value = node_count
+                path_shared.value = path.encode()
                 return (path,node_count)  # Return the action path
             if (curr_char_coord, tuple(curr_stones_coord)) in visited:
                 continue
             node_count += 1
+            if node_count%100 == 0:
+                node_count_shared.value = node_count
             visited.add((curr_char_coord, tuple(curr_stones_coord)))
             # Try all 4 possible directions: Up, Down, Left, Right
             for direction in range(4):

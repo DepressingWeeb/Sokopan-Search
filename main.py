@@ -2,18 +2,18 @@ import ctypes
 import multiprocessing
 import threading
 import time
-
 import pygame
 
 from A_star import AStar
 from bfs import BFS
 from visulizer import  Visualizer
+from button import  Button
 
 
 if __name__ == "__main__":
     pygame.init()
     grid_string = '''
-#######  
+  #######
   #     #
   # .$. #
  ## $@$ #
@@ -32,8 +32,16 @@ if __name__ == "__main__":
 ##### ### #@##  ..#
     #     #########
     #######        '''
+    grid_string_3 = '''
+############
+#  @    .  #
+#  ### ### #
+#  $       #
+#  ### ### #
+#          #
+############'''
     # Convert the string to a 2D list (grid) of characters
-    lines = grid_string.splitlines()
+    lines = grid_string_3.splitlines()
     lines.pop(0)
     grid_2d = [list(line) for line in lines]
     print(grid_2d)
@@ -45,6 +53,21 @@ if __name__ == "__main__":
         ['#', '.', ' ', '@', ' ', ' ', ' ', ' ', '.', ' ', '#'],
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
     ]
+    board_2 = [
+        ['#', '#', '#', '#', '#', '#', '#'],
+        ['#', ' ', ' ', '@', ' ', ' ', '#'],
+        ['#', ' ', '$', ' ', '$', ' ', '#'],
+        ['#', '.', ' ', ' ', ' ', '.', '#'],
+        ['#', '#', '#', '#', '#', '#', '#']
+    ]
+    board_3 = [
+        ['#', '#', '#', '#', '#'],
+        ['#', ' ', ' ', ' ', '#'],
+        ['#', '@', '$', '.', '#'],
+        ['#', ' ', '$', '.', '#'],
+        ['#', '#', '#', '#', '#']
+    ]
+
     node_count = multiprocessing.Value('i', 0)
     path_shared = multiprocessing.Array(ctypes.c_char,1000)
 
@@ -65,3 +88,4 @@ if __name__ == "__main__":
     #print(end-start)
     #bfs = BFS(board)
     #print(bfs.BFS())
+

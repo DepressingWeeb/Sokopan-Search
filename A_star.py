@@ -1,6 +1,8 @@
 
 from collections import deque
 from queue import PriorityQueue
+
+import scipy
 class AStar:
     def __init__(self, board,weight_list):
         self.board_begin = board
@@ -17,6 +19,7 @@ class AStar:
                 elif board[i][j] == '#':
                     self.walls_coord_set.add((i, j))
         self.target.sort()
+
 
     def can_push(self, push_dir, char_coord, stones_coord, walls_coord_set):
         # Determine the direction vector based on push_dir
@@ -105,8 +108,8 @@ class AStar:
         return False
 
 
-
     def A_star(self,node_count_shared,path_shared):
+
         q = PriorityQueue()
         visited = set()
         char_coord = (0, 0)

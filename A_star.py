@@ -62,17 +62,26 @@ class AStar:
     def heuristic(self,char_coord, stone_coords, target_coords):
         # Compute the heuristic as the sum of minimum distances between stones and targets
         total_distance = 0
-
         # Deadlock detection: Check for stones in dead-end corners with no targets
         for stone in stone_coords:
             if self.is_in_deadlock(stone, target_coords,self.walls_coord_set):
                 return float('inf')  # Unsolvable state
-
         # 1. Calculate the stone-target distance (sum of minimum Manhattan distances)
-        for stone in stone_coords:
-            min_dist = min(self.manhattan_distance(stone, target) for target in target_coords)
-            total_distance += min_dist
+        stone_sorted = sorted(stone_coords,key= lambda x:-x[2])
+        used_target = [False for _ in range(len(target_coords))]
 
+        min_idx = -1
+        for stone in stone_sorted:
+            min_dist = 1000000
+            for i in range(len(target_coords)):
+                if used_target[i] :
+                    continue
+                dist = self.manhattan_distance(stone,target_coords[i])
+                if dist<min_dist:
+                    min_dist = dist
+                    min_idx = i
+            total_distance += min_dist * stone[2]
+            used_target[min_idx] = True
         # 2. Add the distance from the player to the closest stone (minimizing movement effort)
         #player_to_stone_dist = min(self.manhattan_distance(char_coord, stone) for stone in stone_coords)
         #total_distance += player_to_stone_dist
@@ -90,19 +99,19 @@ class AStar:
 
         # Corner deadlock checks (4 corners)
         if ((x - 1, y) in walls_coord_set and (x, y - 1) in walls_coord_set):
-            return stone not in target_coords
+            return (x,y) not in target_coords
         if ((x - 1, y) in walls_coord_set and (x, y + 1) in walls_coord_set):
-            return stone not in target_coords
+            return (x,y) not in target_coords
         if ((x + 1, y) in walls_coord_set and (x, y - 1) in walls_coord_set):
-            return stone not in target_coords
+            return (x,y) not in target_coords
         if ((x + 1, y) in walls_coord_set and (x, y + 1) in walls_coord_set):
-            return stone not in target_coords
+            return (x,y) not in target_coords
 
         # Tunnel deadlock detection (horizontal and vertical)
         if ((x, y - 1) in walls_coord_set and (x, y + 1) in walls_coord_set) or \
                 ((x - 1, y) in walls_coord_set and (x + 1, y) in walls_coord_set):
             # If a stone is in a tunnel without targets in that row/column, it's a deadlock
-            if stone not in target_coords:
+            if (x,y) not in target_coords:
                 return True
         return False
 

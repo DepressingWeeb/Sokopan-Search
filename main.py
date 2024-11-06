@@ -42,12 +42,12 @@ if __name__ == "__main__":
         ['#', '.', ' ', '@', ' ', ' ', ' ', ' ', '.', ' ', '#'],
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
     ]
-    #visualizer = Visualizer(board=grid_2d)
-    #visualizer.main_loop()
-    start = time.time()
-    res = AStar(grid_2d,[1,1,1,1,1,1]).A_star()
-    end = time.time()
-    print(res)
-    print(end-start)
+    visualizer = Visualizer(board=grid_2d)
+    visualizer.main_loop()
+    #start = time.time()
+    #res = AStar(grid_2d,[1,1,1,1,1,1]).A_star()
+    #end = time.time()
+    #print(res)
+    #print(end-start)
     #bfs = BFS(board)
     #print(bfs.BFS())

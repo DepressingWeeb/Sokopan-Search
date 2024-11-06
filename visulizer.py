@@ -1,6 +1,7 @@
 import pygame
 from collections import deque
 from timeit import default_timer as timer
+from copy import  deepcopy
 
 from A_star import AStar
 from UCS import UCS
@@ -42,22 +43,22 @@ class Visualizer:
                     self.char_coord = (i,j)
 
 
-    def render_map(self):
+    def render_map(self,board: list[list[str]],char_direction:int):
         for i in range(self.n_rows):
             for j in range(self.n_cols):
                 x,y,w,h = self.rect_coord[i][j]
                 self.SCREEN.blit(self.map_tile,(x,y))
-                if self.board[i][j] == '.':
+                if board[i][j] == '.':
                     center = self.rect_coord[i][j].center
                     img_rect = self.switch_unactivated.get_rect()
                     img_rect.center = center
                     self.SCREEN.blit(self.switch_unactivated, img_rect)
-                elif self.board[i][j] == '#':
+                elif board[i][j] == '#':
                     center = self.rect_coord[i][j].center
                     img_rect = self.tree.get_rect()
                     img_rect.center = center
                     self.SCREEN.blit(self.tree, img_rect)
-                elif self.board[i][j] == '.$':
+                elif board[i][j] == '.$':
                     center = self.rect_coord[i][j].center
                     img_rect_1 = self.switch_unactivated.get_rect()
                     img_rect_1.center = center
@@ -65,24 +66,17 @@ class Visualizer:
                     img_rect_2.center = center
                     self.SCREEN.blit(self.switch_unactivated, img_rect_1)
                     self.SCREEN.blit(self.stone, img_rect_2)
-
-    def render_stone(self):
-        for i in range(self.n_rows):
-            for j in range(self.n_cols):
-                if self.board[i][j] == '$':
+                elif board[i][j] == '$':
                     center = self.rect_coord[i][j].center
                     img_rect = self.stone.get_rect()
                     img_rect.center = center
                     self.SCREEN.blit(self.stone, img_rect)
-    def render_character(self,char_direction):
-        for i in range(self.n_rows):
-            for j in range(self.n_cols):
-                if self.board[i][j] == '@':
+                elif board[i][j] == '@':
                     center = self.rect_coord[i][j].center
                     img_rect = self.character[char_direction].get_rect()
                     img_rect.center = center
                     self.SCREEN.blit(self.character[char_direction], img_rect)
-                elif self.board[i][j] == '.@':
+                elif board[i][j] == '.@':
                     center = self.rect_coord[i][j].center
                     img_rect_1 = self.switch_unactivated.get_rect()
                     img_rect_1.center = center
@@ -91,41 +85,48 @@ class Visualizer:
                     self.SCREEN.blit(self.switch_unactivated, img_rect_1)
                     self.SCREEN.blit(self.character[char_direction], img_rect_2)
 
-    def process_command(self,command : str):
+
+
+    def process_command(self, command: str, char_coord: tuple[int,int], board: list[list[str]]):
         map_dir = {
-            'u': (-1, 0,2),
-            'd': (1, 0,0),
-            'l': (0, -1,3),
-            'r': (0, 1,1)
+            'u': (-1, 0, 2),
+            'd': (1, 0, 0),
+            'l': (0, -1, 3),
+            'r': (0, 1, 1)
         }
         if command.islower():
-            char_x,char_y = self.char_coord
-            change_x,change_y,char_direction = map_dir[command]
-            self.board[char_x][char_y]=self.board[char_x][char_y].replace('@','')
-            self.board[char_x + change_x][char_y + change_y] = (self.board[char_x + change_x][char_y + change_y]+'@').strip()
-            self.char_coord = (char_x+change_x,char_y+change_y)
-            self.char_direction = char_direction
+            char_x, char_y = char_coord
+            change_x, change_y, char_direction = map_dir[command]
+            new_board = deepcopy(board)
+            new_board[char_x][char_y] = new_board[char_x][char_y].replace('@', '')
+            new_board[char_x + change_x][char_y + change_y] = (new_board[char_x + change_x][char_y + change_y] + '@').strip()
+            new_char_coord = (char_x + change_x, char_y + change_y)
+            new_char_direction = char_direction
+            return (new_board,new_char_coord,new_char_direction)
         else:
-            char_x, char_y = self.char_coord
+            char_x, char_y = char_coord
             change_x, change_y, char_direction = map_dir[command.lower()]
-            stone_x, stone_y = char_x + change_x,char_y+ change_y
-            stone_x_after_push,stone_y_after_push = char_x + change_x*2,char_y+ change_y*2
-            if self.board[stone_x_after_push][stone_y_after_push] == '.':
-                self.board[stone_x_after_push][stone_y_after_push] = '.$'
+            stone_x, stone_y = char_x + change_x, char_y + change_y
+            stone_x_after_push, stone_y_after_push = char_x + change_x * 2, char_y + change_y * 2
+            new_board = deepcopy(board)
+            if new_board[stone_x_after_push][stone_y_after_push] == '.':
+                new_board[stone_x_after_push][stone_y_after_push] = '.$'
             else:
-                self.board[stone_x_after_push][stone_y_after_push] = '$'
-            self.board[stone_x][stone_y] = self.board[stone_x][stone_y].replace('$','')
-            self.board[stone_x][stone_y] = (self.board[stone_x][stone_y]+'@').strip()
-            self.board[char_x][char_y]=self.board[char_x][char_y].replace('@','')
-            if self.board[char_x][char_y]=='':
-                self.board[char_x][char_y] = ' '
-            self.char_coord = (char_x + change_x, char_y + change_y)
-            self.char_direction = char_direction
+                new_board[stone_x_after_push][stone_y_after_push] = '$'
+            new_board[stone_x][stone_y] = new_board[stone_x][stone_y].replace('$', '')
+            new_board[stone_x][stone_y] = (new_board[stone_x][stone_y] + '@').strip()
+            new_board[char_x][char_y] = new_board[char_x][char_y].replace('@', '')
+            if new_board[char_x][char_y] == '':
+                new_board[char_x][char_y] = ' '
+            new_char_coord = (char_x + change_x, char_y + change_y)
+            new_char_direction = char_direction
+            return (new_board, new_char_coord, new_char_direction)
+
 
     def main_loop(self):
         run = True
         bfs = BFS(self.board)
-        A_star = AStar(self.board,[1,1,1,1])
+        A_star = AStar(self.board,[1,1,1,1,1,1])
         ucs = UCS(self.board,[0,0,0,0])
         start_time = timer()
         command_str,node_count = A_star.A_star()
@@ -133,28 +134,34 @@ class Visualizer:
         end_time = timer()
         actual_time = end_time-start_time
         print(node_count,actual_time)
-        command_lst = [char for char in command_str]
-        command_queue = deque(command_lst)
+
+        board_states = []
+        current_board = deepcopy(self.board)
+        current_char_coord = self.char_coord
+        current_char_dir = self.char_direction
+        board_states.append((current_board,self.char_coord,self.char_direction))
+        for ch in command_str:
+            new_board,new_char_coord,new_char_dir = self.process_command(ch,current_char_coord,current_board)
+            board_states.append((new_board,new_char_coord,new_char_dir))
+            current_board = new_board
+            current_char_coord = new_char_coord
+            current_char_dir = new_char_dir
+
         self.SCREEN.fill(GREEN)
-        self.render_map()
-        self.render_stone()
-        self.render_character(self.char_direction)
-        pygame.display.update()
+        current_state_index = 0
         while (run):
-            self.current_frame+=1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
             #only render step once per second
-            if len(command_queue)>0 and self.current_frame % self.frame_rate == 0:
-                command = command_queue.popleft()
-                self.process_command(command)
+            if current_state_index<len(board_states) and self.current_frame % self.frame_rate == 0:
+                current_board,current_char_coord,current_char_dir = board_states[current_state_index]
                 self.SCREEN.fill(GREEN)
-                self.render_map()
-                self.render_stone()
-                self.render_character(self.char_direction)
+                self.render_map(current_board,current_char_dir)
+                current_state_index+=1
             pygame.display.update()
             CLOCK.tick(self.frame_rate)
+            self.current_frame += 1
 
 #bfs = BFS(self.board)
 #print(bfs.BFS())

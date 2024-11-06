@@ -1,9 +1,6 @@
 
 from collections import deque
 from queue import PriorityQueue
-
-import scipy
-from line_profiler import profile
 class AStar:
     def __init__(self, board,weight_list):
         self.board_begin = board
@@ -21,7 +18,6 @@ class AStar:
                     self.walls_coord_set.add((i, j))
         self.target.sort()
 
-    @profile
     def can_push(self, push_dir, char_coord, stones_coord, walls_coord_set):
         # Determine the direction vector based on push_dir
         direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][push_dir]
@@ -42,7 +38,7 @@ class AStar:
         # Valid push
         return True
 
-    @profile
+
     def can_move(self, move_dir, char_coord, walls_coord_set):
         direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][move_dir]
         char_x, char_y = char_coord
@@ -51,14 +47,14 @@ class AStar:
             return False
         return (next_x, next_y) not in walls_coord_set
 
-    @profile
+
     def is_move_or_push(self, dir, char_coord, stones_coord):
         direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][dir]
         char_x, char_y = char_coord
         next_x, next_y = char_x + direction[0], char_y + direction[1]
 
         return (next_x, next_y) not in stones_coord
-    @profile
+
     def heuristic(self,char_coord, stone_coords, target_coords):
         # Compute the heuristic as the sum of minimum distances between stones and targets
         total_distance = 0
@@ -109,7 +105,7 @@ class AStar:
         return False
 
 
-    @profile
+
     def A_star(self,node_count_shared,path_shared):
         q = PriorityQueue()
         visited = set()

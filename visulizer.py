@@ -11,6 +11,9 @@ from UCS import UCS
 from bfs import BFS
 from dfs import DFS
 from globals import *
+from utils import sokoban_pushed_weights
+
+
 class Visualizer:
     def __init__(self, board, weight_list=None):
         if weight_list is None:
@@ -176,24 +179,25 @@ class Visualizer:
 
 
         #Render result ribbon
+        # Render result ribbon
         if self.flag_no_sol_found:
             result_width = 250
             result_height = 125
-            result_x_center = 200+(self.window_width - 200)/2
-            result_y_center = self.window_height/2
-            result_rect = pygame.Rect(result_x_center,result_y_center,result_width,result_height)
-            result_rect.center = (result_x_center,result_y_center)
-            self.SCREEN.blit(self.result_ribbon,(result_rect.x,result_rect.y))
-            self.render_text_centered('No Solution',stats_font,RED,result_rect)
+            result_x_center = 200 + (self.window_width - 200) / 2
+            result_y_center = self.window_height / 2
+            result_rect = pygame.Rect(result_x_center, result_y_center, result_width, result_height - 20)
+            result_rect.center = (result_x_center, result_y_center)
+            self.SCREEN.blit(self.result_ribbon, (result_rect.x, result_rect.y))
+            self.render_text_centered('No Solution', font, DROPDOWN_BG_COLOR, result_rect)
         if self.flag_pass:
             result_width = 250
             result_height = 125
             result_x_center = 200 + (self.window_width - 200) / 2
             result_y_center = self.window_height / 2
-            result_rect = pygame.Rect(result_x_center, result_y_center, result_width, result_height)
+            result_rect = pygame.Rect(result_x_center, result_y_center, result_width, result_height - 20)
             result_rect.center = (result_x_center, result_y_center)
             self.SCREEN.blit(self.result_ribbon, (result_rect.x, result_rect.y))
-            self.render_text_centered('Pass', font, GREEN, result_rect)
+            self.render_text_centered('Pass', font, DROPDOWN_BG_COLOR, result_rect)
     def render_map(self,board: list[list[str]],char_direction:int):
         for i in range(self.n_rows):
             for j in range(self.n_cols):
@@ -304,71 +308,7 @@ class Visualizer:
             new_char_direction = char_direction
             return (new_board, new_char_coord, new_char_direction)
 
-    def sokoban_pushed_weights(self, board,weight_list,solution):
-        stones_coord_and_weight = []
-        w_idx = 0
-        n_rows = len(board)
-        n_cols = len(board[0])
-        char_coord = None
-        for i in range(n_rows):
-            for j in range(n_cols):
-                if board[i][j] == '$':
-                    stones_coord_and_weight.append((i, j,weight_list[w_idx]))
-                    w_idx+=1
-                elif board[i][j] == '@':
-                    char_coord = (i, j)
-        # Initialize the character's starting position and the stone positions/weights
-        char_x, char_y = char_coord
-        stones = {(x, y): w for x, y, w in stones_coord_and_weight}
 
-        # Map directions to coordinate changes
-        direction_map = {
-            'u': (-1, 0), 'U': (-1, 0),
-            'd': (1, 0), 'D': (1, 0),
-            'l': (0, -1), 'L': (0, -1),
-            'r': (0, 1), 'R': (0, 1),
-        }
-
-        # List to store cumulative weight pushed at each step
-        weights_pushed = []
-        cumulative_weight = 0  # Keep track of the cumulative weight pushed
-
-        # Process each move in the solution
-        for move in solution:
-            dx, dy = direction_map[move]
-            cumulative_weight+=1
-            if move.islower():  # Character moves without pushing a stone
-                # Update character position
-                char_x += dx
-                char_y += dy
-                weights_pushed.append(cumulative_weight)  # No weight added, just append the current cumulative weight
-            else:  # Character pushes a stone
-                # Calculate stone's current position (adjacent in the direction of push)
-                stone_x = char_x + dx
-                stone_y = char_y + dy
-
-                # Calculate the stone's new position after the push
-                new_stone_x = stone_x + dx
-                new_stone_y = stone_y + dy
-
-                # Get the weight of the stone at the current position
-                if (stone_x, stone_y) in stones:
-                    weight = stones[(stone_x, stone_y)]
-                    cumulative_weight += weight  # Add the stone's weight to the cumulative weight
-                    weights_pushed.append(cumulative_weight)
-
-                    # Move the stone to its new position
-                    stones.pop((stone_x, stone_y))
-                    stones[(new_stone_x, new_stone_y)] = weight
-
-                    # Update character's position (character moves into the pushed stone's position)
-                    char_x += dx
-                    char_y += dy
-                else:
-                    weights_pushed.append(
-                        cumulative_weight)  # Append the current cumulative weight if no stone is pushed
-
-        return weights_pushed
 
     def process_path_returned(self,path):
         board_states = []
@@ -376,7 +316,7 @@ class Visualizer:
         current_char_coord = self.char_coord
         current_char_dir = self.char_direction
         board_states.append((current_board, self.char_coord, self.char_direction,0))
-        pushed_weights = self.sokoban_pushed_weights(self.board,self.weight_list,path)
+        pushed_weights = sokoban_pushed_weights(self.board,self.weight_list,path)
         #print(pushed_weights)
         idx = 0
         for ch in path:

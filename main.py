@@ -6,6 +6,7 @@ import pygame
 
 from A_star import AStar
 from bfs import BFS
+from utils import input_txt_file
 from visulizer import  Visualizer
 from main_screen import MainScreen
 import sys
@@ -91,14 +92,18 @@ if __name__ == "__main__":
         ['#', ' ', ' ', ' ', ' ', ' ', '.', ' ', ' ', ' ', '#'],
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
     ]
+
+    board_inp,weight_list_inp = input_txt_file(r'levels/Level_2.txt')
+    '''
     time_taken = multiprocessing.Value('d',0)
     node = multiprocessing.Value('i',0)
     path = multiprocessing.Array(ctypes.c_char, 10000)
     stop_signal = multiprocessing.Event()
-    a_star_instance = AStar(grid_2d,weight_list=[34,2,43,12,3])
+    a_star_instance = AStar(board_file,weight_list=[34,2,43,12,3])
     res = a_star_instance.A_star(time_taken,node,path,stop_signal)
     print(res)
-    #visualizer_instance = Visualizer(grid_2d,[34,2,43,12,3])
-    #visualizer_instance.visualize()
+    '''
+    visualizer_instance = Visualizer(board_inp,weight_list_inp)
+    visualizer_instance.visualize()
 
 

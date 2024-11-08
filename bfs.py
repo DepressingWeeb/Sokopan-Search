@@ -1,4 +1,4 @@
-
+import time
 from collections import deque
 class BFS:
     def __init__(self, board):
@@ -50,7 +50,8 @@ class BFS:
         next_x, next_y = char_x + direction[0], char_y + direction[1]
 
         return (next_x, next_y) not in stones_coord
-    def BFS(self,node_count_shared,path_shared):
+    def BFS(self,time_taken,node_count_shared,path_shared,stop_signal):
+        start_time = time.time()
         q = deque()
         visited = set()
         char_coord = (0, 0)
@@ -70,16 +71,21 @@ class BFS:
 
             curr_char_coord, curr_stones_coord, path = q.popleft()
             # Check if all stones are on the switches
+
             if sorted(curr_stones_coord) == self.target:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
-                return (path,node_count)  # Return the action path
+                time_taken.value = time.time() - start_time
+                return (path, node_count)  # Return the action path
             if (curr_char_coord, tuple(curr_stones_coord)) in visited:
                 continue
-            node_count += 1
-            if node_count%100 == 0:
-                node_count_shared.value = node_count
             visited.add((curr_char_coord, tuple(curr_stones_coord)))
+            node_count += 1
+            if node_count % 100 == 0:
+                node_count_shared.value = node_count
+                time_taken.value = time.time() - start_time
+                if stop_signal.is_set():
+                    break
             # Try all 4 possible directions: Up, Down, Left, Right
             for direction in range(4):
                 if self.is_move_or_push(direction, curr_char_coord, curr_stones_coord):
@@ -102,5 +108,7 @@ class BFS:
                         new_stones_coord.append(new_stone_pos)
                         q.append((new_char_coord, new_stones_coord, path + "UDLR"[direction]))
                         #visited.add((new_char_coord, tuple(new_stones_coord)))
-
+        node_count_shared.value = node_count
+        path_shared.value = "No solution found".encode()
+        time_taken.value = time.time() - start_time
         return ("No solution found",node_count)  # If no solution is found

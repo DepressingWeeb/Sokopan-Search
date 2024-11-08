@@ -78,7 +78,7 @@ class Visualizer:
         # UI specific
         self.map_tile = pygame.transform.scale(pygame.image.load(r'resources/map/tile001.png').convert_alpha(),
                                                (self.block_size, self.block_size))
-        self.stone = pygame.transform.scale(pygame.image.load(r'resources/stone/tile002.png').convert_alpha(),
+        self.stone = pygame.transform.scale(pygame.image.load(r'resources/stone/tile004.png').convert_alpha(),
                                             (self.block_size - 25, self.block_size - 25))
         self.switch_unactivated = pygame.transform.scale(
             pygame.image.load(r'resources/switch/tile005.png').convert_alpha(),

@@ -1,5 +1,9 @@
 import time
 from collections import deque
+
+import psutil
+
+
 class BFS:
     def __init__(self, board):
         self.board_begin = board
@@ -51,6 +55,7 @@ class BFS:
 
         return (next_x, next_y) not in stones_coord
     def BFS(self,time_taken,node_count_shared,path_shared,stop_signal):
+        process = psutil.Process()
         start_time = time.time()
         q = deque()
         visited = set()
@@ -76,7 +81,8 @@ class BFS:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
                 time_taken.value = time.time() - start_time
-                return (path, node_count)  # Return the action path
+                memory = process.memory_info().peak_wset / (1024 * 1024)
+                return (path, node_count, time_taken.value, memory)
             if (curr_char_coord, tuple(curr_stones_coord)) in visited:
                 continue
             visited.add((curr_char_coord, tuple(curr_stones_coord)))
@@ -111,4 +117,5 @@ class BFS:
         node_count_shared.value = node_count
         path_shared.value = "No solution found".encode()
         time_taken.value = time.time() - start_time
-        return ("No solution found",node_count)  # If no solution is found
+        memory = process.memory_info().peak_wset / (1024 * 1024)
+        return ("No solution found",node_count, time_taken.value, memory)  # If no solution is found

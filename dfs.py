@@ -1,5 +1,10 @@
+import sys
 import time
 from collections import deque
+
+import psutil
+
+
 class DFS:
     def __init__(self, board):
         self.board_begin = board
@@ -17,6 +22,7 @@ class DFS:
         self.target.sort()
         self.node_count = 0
         self.start_time = 0
+        self.visited = set()
 
     def can_push(self, push_dir, char_coord, stones_coord, walls_coord_set):
         direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][push_dir]
@@ -61,11 +67,12 @@ class DFS:
         return False
 
     def DFS(self,time_taken,node_count_shared,path_shared,stop_signal):
+        process = psutil.Process()
         self.start_time = time.time()
         self.time_taken = time_taken
         self.node_count_shared = node_count_shared
         self.stop_signal = stop_signal
-        visited = set()
+        self.visited = set()
         char_coord = (0, 0)
         stones_coord = []
         self.node_count = 0
@@ -78,14 +85,15 @@ class DFS:
                     char_coord = (i, j)
 
         # Start recursive DFS
-        print("Start dfs")
-        result, path = self._dfs_recursive(char_coord, stones_coord, "", visited)
+        sys.setrecursionlimit(10 ** 6)
+        result, path = self._dfs_recursive(char_coord, stones_coord, "")
         node_count_shared.value = self.node_count
         path_shared.value = path.encode()
         time_taken.value = time.time() - self.start_time
-        return (path, result)
+        memory = process.memory_info().peak_wset / (1024 * 1024)
+        return (path, self.node_count,time_taken.value,memory)
 
-    def _dfs_recursive(self, char_coord, stones_coord, path, visited):
+    def _dfs_recursive(self, char_coord, stones_coord, path):
         if self.stop_signal.is_set():
             return self.node_count, "No solution found"
         # Check if all stones are on the switches
@@ -94,11 +102,11 @@ class DFS:
         #print(path)
         # Mark the current state as visited
         state = (char_coord, tuple(stones_coord))
-        if state in visited:
+        if state in self.visited:
             return self.node_count, "No solution found"
 
 
-        visited.add(state)
+        self.visited.add(state)
         self.node_count += 1
         if self.node_count % 100 == 0:
             self.node_count_shared.value = self.node_count
@@ -120,21 +128,15 @@ class DFS:
                     new_stones_coord.remove((new_char_coord[0], new_char_coord[1]))
                     new_stones_coord.append(new_stone_pos)
                     result, new_path = self._dfs_recursive(new_char_coord, new_stones_coord,
-                                                           path + "UDLR"[direction], visited)
+                                                           path + "UDLR"[direction])
                     if new_path != "No solution found":
                         return result, new_path
             else:
                 if self.can_move(direction, char_coord, self.walls_coord_set):
                     new_char_coord = (char_coord[0] + [-1, 1, 0, 0][direction],
                                       char_coord[1] + [0, 0, -1, 1][direction])
-                    result, new_path = self._dfs_recursive(new_char_coord, stones_coord, path + "udlr"[direction],
-                                                           visited)
+                    result, new_path = self._dfs_recursive(new_char_coord, stones_coord, path + "udlr"[direction])
                     if new_path != "No solution found":
                         return result, new_path
-
-
-        # No solution found in this path, return back to previous state
-        visited.remove(state)
-
 
         return self.node_count, "No solution found"

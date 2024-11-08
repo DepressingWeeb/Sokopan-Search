@@ -8,8 +8,10 @@ from A_star import AStar
 from bfs import BFS
 from visulizer import  Visualizer
 from main_screen import MainScreen
+import sys
 
 if __name__ == "__main__":
+
     pygame.init()
     #MainScreen().run()
     grid_string = '''
@@ -40,11 +42,19 @@ if __name__ == "__main__":
 #  ### ### #
 #          #
 ############'''
+    grid_string_4='''
+#####    
+#   #####
+# # #   #
+# $   $ #
+#..#$#$##
+#.@$   # 
+#..  ### 
+######   '''
     # Convert the string to a 2D list (grid) of characters
-    lines = grid_string_3.splitlines()
+    lines = grid_string_4.splitlines()
     lines.pop(0)
     grid_2d = [list(line) for line in lines]
-    print(grid_2d)
     board = [
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
         ['#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'],
@@ -67,19 +77,28 @@ if __name__ == "__main__":
         ['#', ' ', '$', '.', '#'],
         ['#', '#', '#', '#', '#']
     ]
+    weight_list = [1,3]
     board_4 = [
         ['#', '#', '#', '#', '#'],
         ['#', '@', ' ', '#', '#'],
         ['#', ' ', '.', '$', '#'],
         ['#', '#', '#', '#', '#']
     ]
-    visualizer_instance = Visualizer(grid_2d)
-    visualizer_instance.visualize()
-    #start = time.time()
-    #res = AStar(grid_2d,[1,1,1,1,1,1]).A_star()
-    #end = time.time()
-    #print(res)
-    #print(end-start)
-    #bfs = BFS(board)
-    #print(bfs.BFS())
+    board_5 = [
+        ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'],
+        ['#', ' ', ' ', ' ', ' ', ' ', '@', ' ', ' ', ' ', '#'],
+        ['#', '.', ' ', ' ', ' ', '$', '$', ' ', ' ', ' ', '#'],
+        ['#', ' ', ' ', ' ', ' ', ' ', '.', ' ', ' ', ' ', '#'],
+        ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
+    ]
+    time_taken = multiprocessing.Value('d',0)
+    node = multiprocessing.Value('i',0)
+    path = multiprocessing.Array(ctypes.c_char, 10000)
+    stop_signal = multiprocessing.Event()
+    a_star_instance = AStar(grid_2d,weight_list=[34,2,43,12,3])
+    res = a_star_instance.A_star(time_taken,node,path,stop_signal)
+    print(res)
+    #visualizer_instance = Visualizer(grid_2d,[34,2,43,12,3])
+    #visualizer_instance.visualize()
+
 

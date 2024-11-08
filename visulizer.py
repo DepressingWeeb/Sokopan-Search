@@ -63,7 +63,7 @@ class Visualizer:
         self.stop_signal = multiprocessing.Event()  # Signal to stop running algorithms
         self.selected_algorithm = None
         self.node_count = multiprocessing.Value('i', 0)
-        self.path_shared = multiprocessing.Array(ctypes.c_char, 1500)
+        self.path_shared = multiprocessing.Array(ctypes.c_char, 10000)
         self.time_taken = multiprocessing.Value('d', 0)
         #self.step = 0
         self.weight_pushed = 0
@@ -161,7 +161,7 @@ class Visualizer:
         # Render stats text
         stats_font = pygame.font.SysFont(None, 20)
         self.render_text(f"Step: {self.current_state_index-1 if self.current_state_index>0 else 0}", stats_font, (0, 0, 0), (self.banner_position[0] + 15, self.banner_position[1] + ribbon_rect.height))
-        self.render_text(f"Weight: 0", stats_font, (0, 0, 0), (self.banner_position[0] + 15, self.banner_position[1] + ribbon_rect.height+ 30))
+        self.render_text(f"Weight: {self.board_states[self.current_state_index-1][3] if self.current_state_index>0 else 0}", stats_font, (0, 0, 0), (self.banner_position[0] + 15, self.banner_position[1] + ribbon_rect.height+ 30))
         self.render_text(f"Node: {self.node_count.value}", stats_font, (0, 0, 0), (self.banner_position[0] + 15, self.banner_position[1] + ribbon_rect.height+ 60))
         self.render_text(f"Time: {self.time_taken.value:.3f}s", stats_font, (0, 0, 0), (self.banner_position[0] + 15, self.banner_position[1] + ribbon_rect.height+ 90))
 
@@ -303,18 +303,89 @@ class Visualizer:
             new_char_coord = (char_x + change_x, char_y + change_y)
             new_char_direction = char_direction
             return (new_board, new_char_coord, new_char_direction)
+
+    def sokoban_pushed_weights(self, board,weight_list,solution):
+        stones_coord_and_weight = []
+        w_idx = 0
+        n_rows = len(board)
+        n_cols = len(board[0])
+        char_coord = None
+        for i in range(n_rows):
+            for j in range(n_cols):
+                if board[i][j] == '$':
+                    stones_coord_and_weight.append((i, j,weight_list[w_idx]))
+                    w_idx+=1
+                elif board[i][j] == '@':
+                    char_coord = (i, j)
+        # Initialize the character's starting position and the stone positions/weights
+        char_x, char_y = char_coord
+        stones = {(x, y): w for x, y, w in stones_coord_and_weight}
+
+        # Map directions to coordinate changes
+        direction_map = {
+            'u': (-1, 0), 'U': (-1, 0),
+            'd': (1, 0), 'D': (1, 0),
+            'l': (0, -1), 'L': (0, -1),
+            'r': (0, 1), 'R': (0, 1),
+        }
+
+        # List to store cumulative weight pushed at each step
+        weights_pushed = []
+        cumulative_weight = 0  # Keep track of the cumulative weight pushed
+
+        # Process each move in the solution
+        for move in solution:
+            dx, dy = direction_map[move]
+            cumulative_weight+=1
+            if move.islower():  # Character moves without pushing a stone
+                # Update character position
+                char_x += dx
+                char_y += dy
+                weights_pushed.append(cumulative_weight)  # No weight added, just append the current cumulative weight
+            else:  # Character pushes a stone
+                # Calculate stone's current position (adjacent in the direction of push)
+                stone_x = char_x + dx
+                stone_y = char_y + dy
+
+                # Calculate the stone's new position after the push
+                new_stone_x = stone_x + dx
+                new_stone_y = stone_y + dy
+
+                # Get the weight of the stone at the current position
+                if (stone_x, stone_y) in stones:
+                    weight = stones[(stone_x, stone_y)]
+                    cumulative_weight += weight  # Add the stone's weight to the cumulative weight
+                    weights_pushed.append(cumulative_weight)
+
+                    # Move the stone to its new position
+                    stones.pop((stone_x, stone_y))
+                    stones[(new_stone_x, new_stone_y)] = weight
+
+                    # Update character's position (character moves into the pushed stone's position)
+                    char_x += dx
+                    char_y += dy
+                else:
+                    weights_pushed.append(
+                        cumulative_weight)  # Append the current cumulative weight if no stone is pushed
+
+        return weights_pushed
+
     def process_path_returned(self,path):
         board_states = []
         current_board = deepcopy(self.board)
         current_char_coord = self.char_coord
         current_char_dir = self.char_direction
-        board_states.append((current_board, self.char_coord, self.char_direction))
+        board_states.append((current_board, self.char_coord, self.char_direction,0))
+        pushed_weights = self.sokoban_pushed_weights(self.board,self.weight_list,path)
+        #print(pushed_weights)
+        idx = 0
         for ch in path:
             new_board,new_char_coord,new_char_dir = self.process_command(ch,current_char_coord,current_board)
-            board_states.append((new_board,new_char_coord,new_char_dir))
+            board_states.append((new_board,new_char_coord,new_char_dir,pushed_weights[idx]))
             current_board = new_board
             current_char_coord = new_char_coord
             current_char_dir = new_char_dir
+            idx+=1
         return board_states
     def reset_state(self):
         self.current_state_index = -1
@@ -333,7 +404,7 @@ class Visualizer:
             self.current_process = None
             self.board_states = []
             self.reset_state()
-            print("Algorithm stopped")
+            #print("Algorithm stopped")
 
     def start_algorithm(self, algorithm_function):
         self.stop_current_algorithm()  # Stop any running algorithm
@@ -357,10 +428,12 @@ class Visualizer:
             elif not self.pause:
                 if self.current_state_index == -1:
                     path_returned = self.path_shared.value.decode()
+                    #print(path_returned)
+                    #print(len(path_returned))
                     self.board_states = self.process_path_returned(path_returned)
                     self.current_state_index = 0
                 if self.current_state_index < len(self.board_states) and self.current_frame % self.frame_rate == 0:
-                    current_board, current_char_coord, current_char_dir = self.board_states[self.current_state_index]
+                    current_board, current_char_coord, current_char_dir,current_weight = self.board_states[self.current_state_index]
                     self.SCREEN.fill(GREEN)
                     self.render_map(current_board, current_char_dir)
                     self.current_state_index += 1

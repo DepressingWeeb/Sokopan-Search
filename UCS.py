@@ -1,6 +1,10 @@
 import time
 from collections import deque
 from queue import PriorityQueue
+
+import psutil
+
+
 class UCS:
     def __init__(self, board,weight_list):
         self.board_begin = board
@@ -53,6 +57,7 @@ class UCS:
 
         return (next_x, next_y) not in stones_coord
     def UCS(self,time_taken,node_count_shared,path_shared,stop_signal):
+        process = psutil.Process()
         start_time = time.time()
         q = PriorityQueue()
         visited = set()
@@ -80,7 +85,8 @@ class UCS:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
                 time_taken.value = time.time() - start_time
-                return (path, node_count)  # Return the action path
+                memory = process.memory_info().peak_wset / (1024 * 1024)
+                return (path, node_count, time_taken.value, memory)
             if (curr_char_coord, tuple(curr_stones_weight_and_coord)) in visited:
                 continue
             visited.add((curr_char_coord, tuple(curr_stones_weight_and_coord)))
@@ -123,4 +129,5 @@ class UCS:
         node_count_shared.value = node_count
         path_shared.value = "No solution found".encode()
         time_taken.value = time.time() - start_time
-        return ("No solution found",node_count)  # If no solution is found
+        memory = process.memory_info().peak_wset / (1024 * 1024)
+        return ("No solution found", node_count, time_taken.value, memory)  # If no solution is found

@@ -1,4 +1,4 @@
-
+import time
 from collections import deque
 from queue import PriorityQueue
 class UCS:
@@ -52,7 +52,8 @@ class UCS:
         next_x, next_y = char_x + direction[0], char_y + direction[1]
 
         return (next_x, next_y) not in stones_coord
-    def UCS(self,node_count_shared,path_shared):
+    def UCS(self,time_taken,node_count_shared,path_shared,stop_signal):
+        start_time = time.time()
         q = PriorityQueue()
         visited = set()
         char_coord = (0, 0)
@@ -74,16 +75,21 @@ class UCS:
             #extract the stone coord list only
             curr_stones_coord = [(wc[0],wc[1]) for wc in curr_stones_weight_and_coord]
             # Check if all stones are on the switches
+
             if sorted(curr_stones_coord) == self.target:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
-                return (path,node_count)  # Return the action path
+                time_taken.value = time.time() - start_time
+                return (path, node_count)  # Return the action path
             if (curr_char_coord, tuple(curr_stones_weight_and_coord)) in visited:
                 continue
-            node_count += 1
-            if node_count%100 == 0:
-                node_count_shared.value = node_count
             visited.add((curr_char_coord, tuple(curr_stones_weight_and_coord)))
+            node_count += 1
+            if node_count % 100 == 0:
+                node_count_shared.value = node_count
+                time_taken.value = time.time() - start_time
+                if stop_signal.is_set():
+                    break
             # Try all 4 possible directions: Up, Down, Left, Right
             for direction in range(4):
                 if self.is_move_or_push(direction, curr_char_coord, curr_stones_coord):
@@ -114,5 +120,7 @@ class UCS:
                         new_stones_weight_and_coord[idx] = (new_stone_pos_x,new_stone_pos_y,weight)
                         q.put((g_n+weight + 1,new_char_coord, new_stones_weight_and_coord, path + "UDLR"[direction]))
                         #visited.add((new_char_coord, tuple(new_stones_coord)))
-
+        node_count_shared.value = node_count
+        path_shared.value = "No solution found".encode()
+        time_taken.value = time.time() - start_time
         return ("No solution found",node_count)  # If no solution is found

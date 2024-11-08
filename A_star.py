@@ -1,7 +1,6 @@
-
+import time
 from collections import deque
 from queue import PriorityQueue
-
 import scipy
 class AStar:
     def __init__(self, board,weight_list):
@@ -108,8 +107,8 @@ class AStar:
         return False
 
 
-    def A_star(self,node_count_shared,path_shared):
-
+    def A_star(self,time_taken,node_count_shared,path_shared,stop_signal):
+        start_time = time.time()
         q = PriorityQueue()
         visited = set()
         char_coord = (0, 0)
@@ -132,9 +131,11 @@ class AStar:
             #extract the stone coord list only
             curr_stones_coord = [(wc[0],wc[1]) for wc in curr_stones_weight_and_coord]
             # Check if all stones are on the switches
+
             if sorted(curr_stones_coord) == self.target:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
+                time_taken.value = time.time() - start_time
                 return (path,node_count)  # Return the action path
 
             if (curr_char_coord, tuple(curr_stones_weight_and_coord)) in visited:
@@ -143,6 +144,9 @@ class AStar:
             node_count += 1
             if node_count % 100 == 0:
                 node_count_shared.value = node_count
+                time_taken.value = time.time() - start_time
+                if stop_signal.is_set():
+                    break
             visited.add((curr_char_coord, tuple(curr_stones_weight_and_coord)))
             # Try all 4 possible directions: Up, Down, Left, Right
             for direction in range(4):
@@ -184,4 +188,7 @@ class AStar:
                                g_n+1+weight,new_heuristic,new_char_coord,
                                new_stones_weight_and_coord, path + "UDLR"[direction]))
                         #visited.add((new_char_coord, tuple(new_stones_coord)))
+        node_count_shared.value = node_count
+        path_shared.value = "No solution found".encode()
+        time_taken.value = time.time() - start_time
         return ("No solution found",node_count)  # If no solution is found

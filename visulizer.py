@@ -138,9 +138,9 @@ class Visualizer:
     def render_panel(self):
         # Render title
         self.SCREEN.blit(self.panel_bg,(0,0),(0,0,self.panel_width,self.window_height))
-        font = pygame.font.SysFont(None, 36)
+        font = pygame.font.SysFont(None, 48)
         #self.render_text("Lv.01", font, (0, 0, 0), (self.panel_width * 0.4, self.window_height * 0.05))
-        self.render_text_centered("--- Lv.01 ---", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
+        self.render_text_centered("Lv.01", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
         # Render buttons
         button_font = pygame.font.SysFont(None, 24)
         for i, pos in enumerate(self.button_positions):
@@ -181,19 +181,19 @@ class Visualizer:
             result_height = 125
             result_x_center = 200+(self.window_width - 200)/2
             result_y_center = self.window_height/2
-            result_rect = pygame.Rect(result_x_center,result_y_center,result_width,result_height)
+            result_rect = pygame.Rect(result_x_center,result_y_center,result_width,result_height-20)
             result_rect.center = (result_x_center,result_y_center)
             self.SCREEN.blit(self.result_ribbon,(result_rect.x,result_rect.y))
-            self.render_text_centered('No Solution',stats_font,RED,result_rect)
+            self.render_text_centered('No Solution',pygame.font.SysFont(None, 36),DROPDOWN_BG_COLOR,result_rect)
         if self.flag_pass:
             result_width = 250
             result_height = 125
             result_x_center = 200 + (self.window_width - 200) / 2
             result_y_center = self.window_height / 2
-            result_rect = pygame.Rect(result_x_center, result_y_center, result_width, result_height)
+            result_rect = pygame.Rect(result_x_center, result_y_center, result_width, result_height-20)
             result_rect.center = (result_x_center, result_y_center)
             self.SCREEN.blit(self.result_ribbon, (result_rect.x, result_rect.y))
-            self.render_text_centered('Pass', font, GREEN, result_rect)
+            self.render_text_centered('Pass', font, DROPDOWN_BG_COLOR, result_rect)
     def render_map(self,board: list[list[str]],char_direction:int):
         for i in range(self.n_rows):
             for j in range(self.n_cols):

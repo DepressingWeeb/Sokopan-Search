@@ -15,12 +15,13 @@ from utils import sokoban_pushed_weights
 from Level import LevelSelectionScreen
 from Game import Game
 class Visualizer:
-    def __init__(self, board, weight_list=None):
+    def __init__(self, board, lv, weight_list=None):
         if weight_list is None:
             weight_list = [0, 0, 0, 0, 0, 0, 0]
         self.board_begin = board
         self.board = board
         self.weight_list = weight_list
+        self.lv = lv
         self.n_rows = len(self.board)
         self.n_cols = len(self.board[0])
         self.block_size = 640//self.n_rows
@@ -66,7 +67,7 @@ class Visualizer:
         self.stop_signal = multiprocessing.Event()  # Signal to stop running algorithms
         self.selected_algorithm = None
         self.node_count = multiprocessing.Value('i', 0)
-        self.path_shared = multiprocessing.Array(ctypes.c_char, 10000)
+        self.path_shared = multiprocessing.Array(ctypes.c_char, 25000)
         self.time_taken = multiprocessing.Value('d', 0)
         #self.step = 0
         self.weight_pushed = 0
@@ -143,7 +144,7 @@ class Visualizer:
         self.SCREEN.blit(self.panel_bg,(0,0),(0,0,self.panel_width,self.window_height))
         font = pygame.font.SysFont(None, 36)
         #self.render_text("Lv.01", font, (0, 0, 0), (self.panel_width * 0.4, self.window_height * 0.05))
-        self.render_text_centered("--- Lv.01 ---", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
+        self.render_text_centered(f"--- Lv.{self.lv} ---", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
         # Render buttons
         button_font = pygame.font.SysFont(None, 24)
         for i, pos in enumerate(self.button_positions):

@@ -38,13 +38,12 @@ class Game:
                 if len(self.screen_stack) > 1:
                     self.screen_stack.pop()
             elif isinstance(result,int):
-                board_inp, weight_list_inp = utils.input_txt_file(f'levels/input-{result}.txt')
-                result = visulizer.Visualizer(board_inp, weight_list_inp)
+                str_result = f"{result:02}"
+                board_inp, weight_list_inp = utils.input_txt_file(f'levels/input-{str_result}.txt')
+                lv = str_result
+                result = visulizer.Visualizer(board_inp, lv, weight_list_inp)
                 result.visualize()
                 if result =="back_level_selection_screen":
                     self.screen_stack.append(self.level_selection_screen)
 
             pygame.display.update()
-if __name__ == "__main__":
-    game = Game()
-    game.run()

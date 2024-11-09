@@ -88,7 +88,6 @@ class AStar:
                 all_squares.add((i,j))
         self.simple_deadlock = all_squares.difference(all_visited)
         #print(sorted(list(self.simple_deadlock)))
-        print(self.true_costs[0])
 
 
 

@@ -1,7 +1,5 @@
 import sys
 import time
-from collections import deque
-
 import psutil
 
 

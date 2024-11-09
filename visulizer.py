@@ -1,9 +1,5 @@
 import ctypes
 import multiprocessing
-
-import pygame
-from collections import deque
-from timeit import default_timer as timer
 from copy import  deepcopy
 
 from A_star import AStar
@@ -12,8 +8,6 @@ from bfs import BFS
 from dfs import DFS
 from globals import *
 from utils import sokoban_pushed_weights
-from Level import LevelSelectionScreen
-from Game import Game
 class Visualizer:
     def __init__(self, board, lv, weight_list=None):
         if weight_list is None:

@@ -15,12 +15,11 @@ from utils import sokoban_pushed_weights
 from Level import LevelSelectionScreen
 from Game import Game
 class Visualizer:
-    def __init__(self, board,game, weight_list=None):
+    def __init__(self, board, weight_list=None):
         if weight_list is None:
             weight_list = [0, 0, 0, 0, 0, 0, 0]
         self.board_begin = board
         self.board = board
-        self.game = game
         self.weight_list = weight_list
         self.n_rows = len(self.board)
         self.n_cols = len(self.board[0])

@@ -38,7 +38,7 @@ class Game:
                 if len(self.screen_stack) > 1:
                     self.screen_stack.pop()
             elif isinstance(result,int):
-                board_inp, weight_list_inp = utils.input_txt_file(f'levels/input_{result}.txt')
+                board_inp, weight_list_inp = utils.input_txt_file(f'levels/input-{result}.txt')
                 result = visulizer.Visualizer(board_inp, weight_list_inp)
                 result.visualize()
                 if result =="back_level_selection_screen":

@@ -7,7 +7,6 @@ from UCS import UCS
 from bfs import BFS
 from dfs import DFS
 
-
 def sokoban_pushed_weights(board, weight_list, solution):
     stones_coord_and_weight = []
     w_idx = 0
@@ -95,14 +94,15 @@ def to_output(path_to_input_txt):
     node = multiprocessing.Value('i', 0)
     path = multiprocessing.Array(ctypes.c_char, 10000)
     stop_signal = multiprocessing.Event()
-    f = open(f'out/output_for_{os.path.basename(path_to_input_txt)}.txt','w')
+    number_part = os.path.basename(path_to_input_txt).split('-')[1]
+    f = open(f'out/output-{number_part}','w')
     def to_str(algo_name,res):
         path_out, node_count_out, time_taken_out, memory_out= res
         weight_pushed = -1
         if path_out != 'No solution found':
             weight_pushed=sokoban_pushed_weights(board,weight_list,path_out)[-1]
         f.write(algo_name+'\n')
-        f.write(f'Steps: {len(path_out)}, Weight: {weight_pushed}, Node: {node_count_out}, Time (ms): {time_taken_out*1000}, Memory (MB): {memory_out}\n')
+        f.write(f'Steps: {len(path_out)}, Cost: {weight_pushed}, Node: {node_count_out}, Time (ms): {round(time_taken_out * 1000, 2)}, Memory (MB): {round(memory_out, 2)}\n')
         f.write(path_out+'\n')
 
 
@@ -125,4 +125,3 @@ def get_all_output(path_to_level_folder):
     for path in file_paths:
         to_output(os.path.join(path_to_level_folder,path))
         print(f'Done {path}')
-

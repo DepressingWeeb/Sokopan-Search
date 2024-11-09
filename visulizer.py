@@ -12,15 +12,16 @@ from bfs import BFS
 from dfs import DFS
 from globals import *
 from utils import sokoban_pushed_weights
-
-
+from Level import LevelSelectionScreen
+from Game import Game
 class Visualizer:
-    def __init__(self, board, weight_list=None):
+    def __init__(self, board, lv, weight_list=None):
         if weight_list is None:
             weight_list = [0, 0, 0, 0, 0, 0, 0]
         self.board_begin = board
         self.board = board
         self.weight_list = weight_list
+        self.lv = lv
         self.n_rows = len(self.board)
         self.n_cols = len(self.board[0])
         self.block_size = 640//self.n_rows
@@ -66,7 +67,7 @@ class Visualizer:
         self.stop_signal = multiprocessing.Event()  # Signal to stop running algorithms
         self.selected_algorithm = None
         self.node_count = multiprocessing.Value('i', 0)
-        self.path_shared = multiprocessing.Array(ctypes.c_char, 10000)
+        self.path_shared = multiprocessing.Array(ctypes.c_char, 25000)
         self.time_taken = multiprocessing.Value('d', 0)
         #self.step = 0
         self.weight_pushed = 0
@@ -143,7 +144,7 @@ class Visualizer:
         self.SCREEN.blit(self.panel_bg,(0,0),(0,0,self.panel_width,self.window_height))
         font = pygame.font.SysFont(None, 36)
         #self.render_text("Lv.01", font, (0, 0, 0), (self.panel_width * 0.4, self.window_height * 0.05))
-        self.render_text_centered("--- Lv.01 ---", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
+        self.render_text_centered(f"--- Lv.{self.lv} ---", font, (255, 255, 255), (0, self.window_height * 0.02, 200, 30))
         # Render buttons
         button_font = pygame.font.SysFont(None, 24)
         for i, pos in enumerate(self.button_positions):
@@ -247,12 +248,16 @@ class Visualizer:
                                  self.panel_width * 0.25,self.panel_width * 0.25)
             reset_button_rect = pygame.Rect(self.panel_width * 0.64, self.window_height * 0.58,
                                             self.panel_width * 0.25, self.panel_width * 0.25)
+            back_button_rect = pygame.Rect(self.panel_width * 0.1, self.window_height * 0.58,
+                                            self.panel_width * 0.25, self.panel_width * 0.25)
             if pause_button_rect.collidepoint(mouse_x, mouse_y):
                 self.pause = not self.pause
             if reset_button_rect.collidepoint(mouse_x,mouse_y):
                 self.stop_current_algorithm()
                 self.reset_state()
                 self.selected_algorithm = None
+            if back_button_rect.collidepoint(mouse_x,mouse_y):
+                self.back_pressed = True
             # Check for button clicks
             for i, pos in enumerate(self.button_positions):
                 button_rect = pygame.Rect(pos, (self.button_img.get_width(), self.button_img.get_height()))
@@ -352,14 +357,19 @@ class Visualizer:
         self.current_process.start()
     def visualize(self):
         run = True
+        self.back_pressed = False
         while (run):
             #print(self.node_count.value)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    run = False
+                    pygame.quit()
+                    return
                 else:
                     self.handle_event(event)
-
+                if self.back_pressed:
+                    self.SCREEN =pygame.display.set_mode((1280,720))
+                    run = False
+                    return "back_level_selection_screen"
             if self.path_shared.value == b"":
                 self.SCREEN.fill(GREEN)
                 self.render_map(self.board, 0)

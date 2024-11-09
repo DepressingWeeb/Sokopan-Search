@@ -2,7 +2,7 @@
 
 > Project to solve sokoban puzzle using search algorithm, with CLI and GUI mode.
 
-Some sokoban will never be translated, therefore this project is born.
+Some sokoban will never be solved, therefore this project is born.
 ## Installation
 
 ### Local setup

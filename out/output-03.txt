@@ -1,0 +1,12 @@
+BFS
+Steps: 23, Cost: 65, Node: 694, Time (ms): 2.98, Memory (MB): 0.0
+urrurrrrdLulDLLdlluRdrU
+DFS
+Steps: 31, Cost: 73, Node: 48, Time (ms): 1.0, Memory (MB): 0.0
+urdruurrdLurrrdLulDuldLdlluRdrU
+UCS
+Steps: 23, Cost: 65, Node: 544, Time (ms): 5.99, Memory (MB): 0.0
+rruurrrrdLulDLLdlluRdrU
+A*
+Steps: 23, Cost: 65, Node: 206, Time (ms): 2.99, Memory (MB): 0.0
+rruurrrrdLulDLLdlluRdrU

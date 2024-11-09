@@ -58,11 +58,13 @@ class LevelButton:
 
         # Dynamically set the font size based on the button height
         self.text = self.scale_text(text, size[1])
-        self.text_rect = self.text.get_rect(center=self.rect.center)
+        self.text_rect = self.text.get_rect()
+        self.text_rect.x = self.rect.x + 40  # Offset by 10 pixels from left
+        self.text_rect.y = self.rect.y + 40
 
     def scale_text(self, text, button_height):
         # Scale the font size based on the button's height (adjust the divisor as needed)
-        font_size = max(10, int(button_height * 0.3))  # 0.5 is an arbitrary scale factor for readability
+        font_size = max(10, int(button_height * 0.25))  # 0.5 is an arbitrary scale factor for readability
         scaled_font = get_font(font_size) # You can pass the font path if needed
         return scaled_font.render(text, True, (255, 255, 255))  # White color
 
@@ -87,23 +89,23 @@ class LevelSelectionScreen:
             self.buttons = []
             self.load_buttons()
             self.back_button = Button(
-                image=pygame.image.load("resources/ui/Button_3Slides.png"),  # Your back button image
-                pos=(1280 - 150, 65),  # Position in the upper-right corner
-                text_input="BACK",
+                image=pygame.image.load("resources/ui/back_icon.png"),  # Your back button image
+                pos=(80, 80),  # Position in the upper-right corner
+                text_input="",
                 font=self.font,
                 base_color="#d7fcd4",
                 hovering_color="White",
-                scale=(250,100)  # Adjusted size of the button
+                scale=(72,72)  # Adjusted size of the button
             )
             self.background_image = pygame.image.load("resources/ui/background.png")
             self.background_image = pygame.transform.scale(self.background_image, Level_size)
 
             self.title_image = pygame.image.load("resources/ui/Ribbon.png")
-            self.title_image = pygame.transform.scale(self.title_image, (350, 90))
+            self.title_image = pygame.transform.scale(self.title_image, (400, 120))
             self.title_rect = self.title_image.get_rect(center=(screen.get_width() // 2, 80))
 
         # Render text on the title image
-            self.title_text = self.title_text = self.get_scaled_font("Level", self.title_image.get_width()-100, initial_font_size=60)
+            self.title_text = self.title_text = self.get_scaled_font("Level", self.title_image.get_width()-100, initial_font_size=48)
             self.title_text_rect = self.title_text.get_rect(center=self.title_rect.center)
 
         def get_scaled_font(self, text, max_width, initial_font_size=50, font_name="resources/ui/font.ttf",
@@ -120,15 +122,16 @@ class LevelSelectionScreen:
         def load_buttons(self):
             rows, cols = 2, 5  # Adjust as needed
             button_size = (150, 150)
-            start_x, start_y = 75, 150
-            gap = 100
+            start_x, start_y = 75, 200
+            gapX = 100
+            gapY = 50
             level = 1
             for row in range(rows):
                 for col in range(cols):
                     if level > self.num_levels:
                         break
-                    x = start_x + col * (button_size[0] + gap)
-                    y = start_y + row * (button_size[1] + gap)
+                    x = start_x + col * (button_size[0] + gapX)
+                    y = start_y + row * (button_size[1] + gapY)
                     button = LevelButton((x, y), button_size, f"{level:02}", self.font, level,
                                          image=pygame.image.load("resources/ui/Button.png"))
                     self.buttons.append(button)

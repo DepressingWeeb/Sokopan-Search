@@ -48,10 +48,10 @@ class MainMenu:
         self.button_font = get_font(50)
         self.play_button = Button(
             image=pygame.image.load("resources/ui/Button_3Slides.png"),
-            pos=(self.game.screen_width // 2, self.game.screen_height // 2 - 50),
+            pos=(self.game.screen_width // 2, (self.game.screen_height // 2) + 75),
             text_input="PLAY",
             font=self.button_font,
-            base_color="#d7fcd4",
+            base_color="#225588",
             hovering_color="White",
             scale=(300, 150)
         )
@@ -60,8 +60,8 @@ class MainMenu:
     def display(self):
         # Draw background and title
         self.game.screen.blit(self.bg, (0, 0))
-        title_text = self.title_font.render("SOKOBAN", True, "#FFFFFF")
-        title_rect = title_text.get_rect(center=(self.game.screen_width // 2, 150))
+        title_text = self.title_font.render("SOKOBAN", True, "#225588")
+        title_rect = title_text.get_rect(center=(self.game.screen_width // 2, 250))
         self.game.screen.blit(title_text, title_rect)
 
         # Update and draw buttons

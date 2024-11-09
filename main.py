@@ -93,17 +93,17 @@ if __name__ == "__main__":
         ['#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#']
     ]
 
-    board_inp,weight_list_inp = input_txt_file(r'levels/Level_2.txt')
-    '''
+    board_inp,weight_list_inp = input_txt_file(r'levels/Text10.txt')
+
+    visualizer_instance = Visualizer(grid_2d,[34,2,43,12,3])
+    visualizer_instance.visualize()
     time_taken = multiprocessing.Value('d',0)
     node = multiprocessing.Value('i',0)
     path = multiprocessing.Array(ctypes.c_char, 10000)
     stop_signal = multiprocessing.Event()
-    a_star_instance = AStar(board_file,weight_list=[34,2,43,12,3])
-    res = a_star_instance.A_star(time_taken,node,path,stop_signal)
-    print(res)
-    '''
-    visualizer_instance = Visualizer(board_inp,weight_list_inp)
-    visualizer_instance.visualize()
+    a_star_instance = AStar(board_inp,weight_list=[1,1,1,1,1,1])
+    #res = a_star_instance.A_star(time_taken,node,path,stop_signal)
+    a_star_instance.preprocess()
+
 
 

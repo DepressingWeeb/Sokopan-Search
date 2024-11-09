@@ -2,6 +2,7 @@ import time
 from collections import deque
 from queue import PriorityQueue
 
+import numpy as np
 import psutil
 import scipy
 class AStar:
@@ -20,6 +21,7 @@ class AStar:
                 elif board[i][j] == '#':
                     self.walls_coord_set.add((i, j))
         self.target.sort()
+        self.preprocess()
 
 
     def can_push(self, push_dir, char_coord, stones_coord, walls_coord_set):
@@ -41,6 +43,53 @@ class AStar:
 
         # Valid push
         return True
+    def can_pull(self, pull_dir, stone_coord, walls_coord_set):
+        # Determine the direction vector based on push_dir
+        direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][pull_dir]
+        stone_x,stone_y = stone_coord[0],stone_coord[1]
+        char_x, char_y = stone_x + direction[0], stone_y + direction[1]
+        next_x, next_y = char_x + direction[0], char_y + direction[1]
+
+        # Check if the next position is out of bounds or blocked
+        if not (0 <= next_x < self.n_rows and 0 <= next_y < self.n_cols):
+            return False
+        if (next_x, next_y) in walls_coord_set or (char_x,char_y) in walls_coord_set:
+            return False
+
+        # Valid pull
+        return True
+
+    def preprocess(self):
+        self.true_costs = []
+        all_visited = set(self.walls_coord_set)
+        all_squares = set()
+        for i in range(len(self.target)):
+            visited = set()
+            true_cost = [[100000 for _ in range(self.n_cols)] for __ in range(self.n_rows)]
+            q = deque()
+            q.append((self.target[i],0))
+            while q:
+                stone_coord , cost = q.popleft()
+                if stone_coord in visited:
+                    continue
+                visited.add(stone_coord)
+                true_cost[stone_coord[0]][stone_coord[1]] = cost
+                for dir in range(4):
+                    if self.can_pull(dir,stone_coord,self.walls_coord_set):
+                        direction = [(-1, 0), (1, 0), (0, -1), (0, 1)][dir]
+                        stone_x, stone_y = stone_coord[0], stone_coord[1]
+                        char_x, char_y = stone_x + direction[0], stone_y + direction[1]
+                        new_stone_coord = (char_x,char_y)
+                        q.append((new_stone_coord,cost+1))
+            self.true_costs.append(true_cost)
+            all_visited = all_visited.union(visited)
+        for i in range(self.n_rows):
+            for j in range(self.n_cols):
+                all_squares.add((i,j))
+        self.simple_deadlock = all_squares.difference(all_visited)
+        #print(sorted(list(self.simple_deadlock)))
+        print(self.true_costs[0])
+
 
 
     def can_move(self, move_dir, char_coord, walls_coord_set):
@@ -60,58 +109,47 @@ class AStar:
         return (next_x, next_y) not in stones_coord
 
     def heuristic(self,char_coord, stone_coords, target_coords):
-        # Compute the heuristic as the sum of minimum distances between stones and targets
-        total_distance = 0
         # Deadlock detection: Check for stones in dead-end corners with no targets
         for stone in stone_coords:
-            if self.is_in_deadlock(stone, target_coords,self.walls_coord_set):
+            if self.is_in_deadlock(stone):
                 return float('inf')  # Unsolvable state
-        # 1. Calculate the stone-target distance (sum of minimum Manhattan distances)
-        stone_sorted = sorted(stone_coords,key= lambda x:-x[2])
-        used_target = [False for _ in range(len(target_coords))]
 
-        min_idx = -1
-        for stone in stone_sorted:
-            min_dist = 1000000
-            for i in range(len(target_coords)):
-                if used_target[i] :
-                    continue
-                dist = self.manhattan_distance(stone,target_coords[i])
-                if dist<min_dist:
-                    min_dist = dist
-                    min_idx = i
-            total_distance += min_dist * stone[2]
-            used_target[min_idx] = True
-        # 2. Add the distance from the player to the closest stone (minimizing movement effort)
-        #player_to_stone_dist = min(self.manhattan_distance(char_coord, stone) for stone in stone_coords)
-        #total_distance += player_to_stone_dist
+        n = len(stone_coords)
+        cost_matrix = np.zeros((n,n))
+        for i,stone in enumerate(stone_coords):
+            stone_x,stone_y,w = stone
+            for j in range(len(target_coords)):
+                cost = self.true_costs[j][stone_x][stone_y]*w
+                cost_matrix[i][j] = cost
+        row_ind,col_ind = scipy.optimize.linear_sum_assignment(cost_matrix)
+        return cost_matrix[row_ind,col_ind].sum()
+        '''
+        total_distance = 0
+        for i, stone in enumerate(stone_coords):
+            stone_x, stone_y, w = stone
+            min_cost = 10000000
+            for j in range(len(self.target)):
+                cost = self.true_costs[j][stone_x][stone_y] * w
+                min_cost = min(cost,min_cost)
+            total_distance+=min_cost
         return total_distance
+        '''
+
 
 
     @staticmethod
     def manhattan_distance(coord1, coord2):
         return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
 
-    @staticmethod
-    def is_in_deadlock(stone, target_coords, walls_coord_set):
+    def is_in_deadlock(self,stone):
         # Extract the x, y coordinates of the stone
         x, y= stone[0], stone[1]
-
-        # Corner deadlock checks (4 corners)
-        if ((x - 1, y) in walls_coord_set and (x, y - 1) in walls_coord_set):
-            return (x,y) not in target_coords
-        if ((x - 1, y) in walls_coord_set and (x, y + 1) in walls_coord_set):
-            return (x,y) not in target_coords
-        if ((x + 1, y) in walls_coord_set and (x, y - 1) in walls_coord_set):
-            return (x,y) not in target_coords
-        if ((x + 1, y) in walls_coord_set and (x, y + 1) in walls_coord_set):
-            return (x,y) not in target_coords
-        return False
-
+        return (x,y) in self.simple_deadlock
 
     def A_star(self,time_taken,node_count_shared,path_shared,stop_signal):
         process = psutil.Process()
         start_time = time.time()
+
         q = PriorityQueue()
         visited = set()
         char_coord = (0, 0)

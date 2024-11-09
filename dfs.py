@@ -85,7 +85,7 @@ class DFS:
                     char_coord = (i, j)
 
         # Start recursive DFS
-        sys.setrecursionlimit(10 ** 6)
+        sys.setrecursionlimit(10 ** 8)
         result, path = self._dfs_recursive(char_coord, stones_coord, "")
         node_count_shared.value = self.node_count
         path_shared.value = path.encode()

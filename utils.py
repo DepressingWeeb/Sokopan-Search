@@ -68,9 +68,10 @@ def input_txt_file(file_path):
     with open(file_path,'r') as f:
         lines = f.readlines()
         weight_list = list(map(int,lines[0].strip().split(' ')))
-        max_width = max([len(line) for line in lines[1:]])
+        max_width = max([len(line.rstrip()) for line in lines[1:]])
         board = []
         for line in lines[1:]:
+            line = line.rstrip()
             while len(line)<max_width:
                 line+= ' '
             line_split = [char for char in line]

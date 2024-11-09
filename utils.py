@@ -7,6 +7,20 @@ from UCS import UCS
 from bfs import BFS
 from dfs import DFS
 
+import ctypes
+import multiprocessing
+
+
+import ctypes
+import multiprocessing
+import os
+
+from A_star import AStar
+from UCS import UCS
+from bfs import BFS
+from dfs import DFS
+
+
 def sokoban_pushed_weights(board, weight_list, solution):
     stones_coord_and_weight = []
     w_idx = 0
@@ -93,6 +107,44 @@ def to_output(path_to_input_txt):
     time_taken = multiprocessing.Value('d', 0)
     node = multiprocessing.Value('i', 0)
     path = multiprocessing.Array(ctypes.c_char, 10000)
+    stop_signal = multiprocessing.Event()
+    f = open(f'out/output_for_{os.path.basename(path_to_input_txt)}.txt','w')
+    def to_str(algo_name,res):
+        path_out, node_count_out, time_taken_out, memory_out= res
+        weight_pushed = -1
+        if path_out != 'No solution found':
+            weight_pushed=sokoban_pushed_weights(board,weight_list,path_out)[-1]
+        f.write(algo_name+'\n')
+        f.write(f'Steps: {len(path_out)}, Weight: {weight_pushed}, Node: {node_count_out}, Time (ms): {time_taken_out*1000}, Memory (MB): {memory_out}\n')
+        f.write(path_out+'\n')
+
+
+    a_star_instance = AStar(board, weight_list)
+    res1 = a_star_instance.A_star(time_taken, node, path, stop_signal)
+    ucs_instance = UCS(board,weight_list)
+    res2 = ucs_instance.UCS(time_taken, node, path, stop_signal)
+    bfs_instance = BFS(board)
+    res3 = bfs_instance.BFS(time_taken, node, path, stop_signal)
+    dfs_instance = DFS(board)
+    res4 = dfs_instance.DFS(time_taken, node, path, stop_signal)
+    to_str('BFS',res3)
+    to_str('DFS',res4)
+    to_str('UCS',res2)
+    to_str('A*',res1)
+    f.close()
+
+def get_all_output(path_to_level_folder):
+    file_paths = os.listdir(path_to_level_folder)
+    for path in file_paths:
+        to_output(os.path.join(path_to_level_folder,path))
+        print(f'Done {path}')
+
+def to_output(path_to_input_txt):
+
+    board,weight_list = input_txt_file(path_to_input_txt)
+    time_taken = multiprocessing.Value('d', 0)
+    node = multiprocessing.Value('i', 0)
+    path = multiprocessing.Array(ctypes.c_char, 25000)
     stop_signal = multiprocessing.Event()
     number_part = os.path.basename(path_to_input_txt).split('-')[1]
     f = open(f'out/output-{number_part}','w')

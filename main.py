@@ -2,6 +2,12 @@ import os.path
 import pygame
 import argparse
 from utils import  get_all_output
+
+from A_star import AStar
+from bfs import BFS
+from utils import input_txt_file
+from utils import get_all_output
+from visulizer import  Visualizer
 from Game import Game
 from utils import to_output
 if __name__ == "__main__":
@@ -30,6 +36,11 @@ if __name__ == "__main__":
                 print('Done')
             else:
                 raise ValueError('Something is wrong with file path input')
+
+
+    #pygame.init()
+    #game = Game()
+    #game.run()
 
 
 

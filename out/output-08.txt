@@ -1,0 +1,12 @@
+BFS
+Steps: 31, Cost: 691, Node: 52503, Time (ms): 298.01, Memory (MB): 2.78
+uuuuuurrDDDDldRRRRdDurUdddLLLLL
+DFS
+Steps: 771, Cost: 3371, Node: 46958, Time (ms): 589.03, Memory (MB): 1.83
+uuuuuurddddddruuuuruulDulddddddruuuUddddluuuuuurrdLulDulddddddruuuUddddruurdrdddrUUddluuuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurddddruuruLLulluuuulDulddddddruuuUddddluuuuuurrdddddRuluuuulDulddddddruuuUddddluuuuuurrdddddrurDuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurdDuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurddDuuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurdddldRuuuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurddddRuuululdluuuuulDulddddddruuuUddddluuuuuurrdddddrurddddruuururddddLLLuuuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurddddLuruuuldluuuuulDulddddddruuuUddddluuuuuurrdddddrurddddlLLrruruuuldluuuuulDulddddddruuuUddddluuuuuurrdLulDDuuldddRuuulddddddruurddruuuuuulddDuuulddddddruruLuuuuldddDuuuuldddddRRRRurDDurdddlluRuurdruurddddllUUddluuuRdddruuU
+UCS
+Steps: 31, Cost: 691, Node: 156520, Time (ms): 2347.15, Memory (MB): 3.37
+ruuuuuurDDDDldRRRRdDruUdddLLLLL
+A*
+Steps: 31, Cost: 691, Node: 2871, Time (ms): 43.85, Memory (MB): 0.01
+ruuuuuurDDDDldRRRRdDruUdddLLLLL

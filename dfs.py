@@ -66,6 +66,7 @@ class DFS:
 
     def DFS(self,time_taken,node_count_shared,path_shared,stop_signal):
         process = psutil.Process()
+        memory_start = process.memory_info().rss / (1024 * 1024)
         self.start_time = time.time()
         self.time_taken = time_taken
         self.node_count_shared = node_count_shared
@@ -88,7 +89,7 @@ class DFS:
         node_count_shared.value = self.node_count
         path_shared.value = path.encode()
         time_taken.value = time.time() - self.start_time
-        memory = process.memory_info().peak_wset / (1024 * 1024)
+        memory = process.memory_info().rss / (1024 * 1024)-memory_start
         return (path, self.node_count,time_taken.value,memory)
 
     def _dfs_recursive(self, char_coord, stones_coord, path):

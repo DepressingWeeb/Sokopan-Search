@@ -56,6 +56,7 @@ class BFS:
         return (next_x, next_y) not in stones_coord
     def BFS(self,time_taken,node_count_shared,path_shared,stop_signal):
         process = psutil.Process()
+        memory_start = process.memory_info().rss / (1024 * 1024)
         start_time = time.time()
         q = deque()
         visited = set()
@@ -117,5 +118,5 @@ class BFS:
         node_count_shared.value = node_count
         path_shared.value = "No solution found".encode()
         time_taken.value = time.time() - start_time
-        memory = process.memory_info().peak_wset / (1024 * 1024)
+        memory = process.memory_info().rss / (1024 * 1024) - memory_start
         return ("No solution found",node_count, time_taken.value, memory)  # If no solution is found

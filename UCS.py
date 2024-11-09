@@ -86,7 +86,7 @@ class UCS:
                 node_count_shared.value = node_count
                 path_shared.value = path.encode()
                 time_taken.value = time.time() - start_time
-                memory = process.memory_info().peak_wset / (1024 * 1024)
+                memory = process.memory_info().rss / (1024 * 1024) - memory_start
                 return (path, node_count, time_taken.value, memory)
             if (curr_char_coord, tuple(curr_stones_weight_and_coord)) in visited:
                 continue
